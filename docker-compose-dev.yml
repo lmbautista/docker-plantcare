@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  gateway:
+    container_name: gateway
+    env_file: ./.env
+    environment:
+      GATEWAY_HOST: dev.${GATEWAY_HOST}
+      GATEWAY_DEFAULT_SERVICE: ${GATEWAY_DEFAULT_SERVICE}
+      GATEWAY_API_SERVICE: ${GATEWAY_API_SERVICE}
+    build:
+      context: ./compose/gateway
+    ports:
+      - 80:80
+      - 443:443
+  plantcare:
+    container_name: plantcare
+    tty: true
+    stdin_open: true
+    env_file: ./.env
+    environment:
+      RAILS_ENV: development
+    build:
+      context: ../plantcare
+    volumes:
+      - ../plantcare:/var/www/plantcare
+    depends_on:
+      - gateway
+      - wtever-api
+      - db
+    expose:
+      - 8080
+  wtever-api: &wtever-api
+    container_name: wtever-api
+    tty: true
+    stdin_open: true
+    env_file: ./.env
+    environment:
+      RAILS_ENV: development
+      REDIS_WTEVER_API_URL: redis://wtever-api-redis:6379
+    build:
+      context: ../wtever-api
+    volumes:
+      - ../wtever-api:/var/www/wtever-api
+    depends_on:
+      - gateway
+      - db
+      - wtever-api-redis
+    expose:
+      - 8080
+  db:
+    container_name: db
+    image: mysql:5.7
+    env_file: ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./compose/db/:/var/lib/mysql
+    ports:
+      - "3336:3306"
+  wtever-api-redis:
+    image: redis
+    container_name: wtever-api-redis
+    volumes:
+      - ./compose/wtever-api-redis:/data
+  wtever-api-sidekiq:
+    <<: *wtever-api
+    container_name: wtever-api-sidekiq
+    command: bundle exec sidekiq -C ./config/sidekiq.yml

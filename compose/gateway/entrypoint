@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Generate self-signed certificate
+openssl req -x509 \
+            -nodes \
+            -days 825 \
+            -newkey rsa:4096 \
+            -keyout /etc/ssl/private/gateway.key \
+            -out /etc/ssl/certs/gateway.crt \
+            -subj "/CN=$GATEWAY_HOST"
+
+exec "$@"
