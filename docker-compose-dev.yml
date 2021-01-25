@@ -13,6 +13,8 @@ services:
     ports:
       - 80:80
       - 443:443
+    volumes:
+      - app-webroot:/etc/nginx/html/uploads
   plantcare:
     container_name: plantcare
     tty: true
@@ -41,7 +43,7 @@ services:
     build:
       context: ../wtever-api
     volumes:
-      - ../wtever-api:/var/www/wtever-api
+      - app-webroot:/var/www/wtever-api/public/uploads
     depends_on:
       - gateway
       - db
@@ -67,3 +69,5 @@ services:
     <<: *wtever-api
     container_name: wtever-api-sidekiq
     command: bundle exec sidekiq -C ./config/sidekiq.yml
+volumes:
+  app-webroot: {}
