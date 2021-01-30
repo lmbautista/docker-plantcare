@@ -44,6 +44,8 @@ services:
       context: ../wtever-api
     volumes:
       - app-webroot:/var/www/wtever-api/public/uploads
+      - ../wtever-api/lib/tasks:/var/www/wtever-api/lib/tasks
+      - ../wtever-api/test/lib/tasks:/var/www/wtever-api/test/lib/tasks
     depends_on:
       - gateway
       - db
